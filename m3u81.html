@@ -1,0 +1,38 @@
+
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name=”applicable-device” content=”pc,mobile”>
+
+<meta name="sogou_site_verification" content="XgMcqn71e8"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/video.js@7.4.1/dist/video-js.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/open-iconic-bootstrap.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/video.js@7.4.1/dist/video.min.js"></script>
+</head>
+<body>
+<video  id="player" class="video-js vjs-16-9 vjs-big-play-centered" controls autoplay width="360" height="640" data-setup='{}'>
+<source src="./src/z.m3u8" type="application/x-mpegURL">
+</video>
+    <script>
+var url3=window.location.href;
+    var arrurl1=url3.replace(/^.+fid\=/,'');
+var purl = arrurl1;
+        var liveUrl  =purl ;
+        var player = videojs('player');
+ 
+        player.ready(function() {
+            this.src({
+                src: liveUrl,
+                type: 'application/x-mpegURL',
+            });
+        });
+ 
+    </script>
+
+</body>
+</html>
