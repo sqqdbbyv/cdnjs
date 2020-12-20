@@ -10,7 +10,7 @@ body{ padding-top: 90px;}
 body.active{ padding-top: 60px;}
 
 /* header */
-.myui-header__top{position:fixed; top:0; z-index:999; width:100%; min-height:60px; background-color: rgb(255 55 155 / 0%); box-shadow: 0 2px 5px rgba(0,0,0,.1);}
+.myui-header__top{position:fixed; top:0; z-index:999; width:100%; min-height:60px; background-color: rgb(255 5 155 / 30%); box-shadow: 0 2px 5px rgba(0,0,0,.1);}
 .top-fixed-down{margin-top:-60px;}
 
 /* header-logo */
