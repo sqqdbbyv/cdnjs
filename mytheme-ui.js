@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * 版本：MYUI Copyright © 2019
  * 作者：QQ726662013版权所有
  * 官网：https://www.mytheme.cn
@@ -138,8 +138,8 @@ var MyTheme = {
 				url=0||location.href;
 				var qrcode = new QRCode('qrcode', {
 				  	text: url,
-				  	width: 160,
-				  	height: 160,
+				  	width: 120,
+				  	height: 120,
 				  	colorDark : dark,
 				  	colorLight : light,
 				  	correctLevel : QRCode.CorrectLevel.H
@@ -151,18 +151,21 @@ var MyTheme = {
 				if($(".flickity").length){
 					$(".flickity").each(function(){
 						var $that = $(this);
-	                	MyTheme.Images.Flickity.Set($that,$that.attr('data-align'),$that.attr('data-dots'),$that.attr('data-next'));
+	                	MyTheme.Images.Flickity.Set($that,$that.attr('data-align'),$that.attr('data-dots'),$that.attr('data-next'),$that.attr('data-play'));
+						//MyTheme.Images.Lazyload();
 	                });
 				}
 			},
-			'Set': function(id,align,dots,next) {
+			'Set': function(id,align,dots,next,play) {
 				dots=dots||false;
 				next=next||false;
+				play=play||false;
 				id.flickity({
 				  	cellAlign: align,
 				  	wrapAround: true,
 				  	contain: true,
 				  	pageDots: dots,
+					autoPlay: play,
 				  	percentPosition: true,
 				  	prevNextButtons: next
 				});	
@@ -201,20 +204,30 @@ var MyTheme = {
 				var codyId = this;
 				var shortId = $(this);
 				var shortUrl = shortId.val() || shortId.attr("data-url");
-				$.ajax({
-					type : 'GET',
-					url : myui.shortapi+encodeURIComponent(shortUrl),
-					dataType : 'jsonp',
-					success : function(r) {
-						url_short = r.data.urls[0].url_short;
-						if(shortId.val()){
-							shortId.val(url_short);
-						}else if(shortId.attr("data-url")){
-							shortId.attr("data-url",url_short);
-							MyTheme.Link.Copy.Set(codyId,url_short);
+				var linkText = shortId.attr("data-text");
+				if(myui.short==1){
+					$.ajax({
+						type : 'GET',
+						url : myui.shortapi+encodeURIComponent(shortUrl),
+						dataType : 'jsonp',
+						success : function(r) {
+							url_short = r.data.urls[0].url_short;
+							if(shortId.val()){
+								shortId.val(linkText+url_short);
+							}else if(shortId.attr("data-url")){
+								shortId.attr("data-url",url_short);
+								MyTheme.Link.Copy.Set(codyId,linkText+url_short);
+							}
 						}
-					}
-			    });
+					});
+				}else{
+					if(shortId.val()){
+						shortId.val(linkText+shortUrl);
+					}else if(shortId.attr("data-url")){
+						shortId.attr("data-url",shortUrl);
+						MyTheme.Link.Copy.Set(codyId,linkText+shortUrl);
+					}	
+				}
 			});
 		}
 	},
@@ -235,20 +248,38 @@ var MyTheme = {
 		  		content: '<div class="col-pd">'+html+'</div>'
 		    });
 		},
+		'Div': function(id) {
+			layer.open({
+				type: 1,
+				title:false,
+				skin: 'layui-layer-rim',
+				content: $(id)
+			});
+		},
+		'Text': function(title,text,wide,high) {
+			layer.open({
+				type: 1,
+				title: title,
+				skin: 'layui-layer-rim',
+				area: [wide+'px', high+'px'],
+				content: '<div class="col-pd">'+text+'</div>'
+			});
+		},
 		'Popbody': function(name,title,html,day,wide,high) {
 			var pop_is = MyTheme.Cookie.Get(name);
+			var html = $(html).html();
 			if(!pop_is){
-		        layer.open({
+				layer.open({
 					type: 1,
-			    	title: title,
-			  		skin: 'layui-layer-rim',
-			  		content: html,
-			  		area: [wide+'px', high+'px'],
-			  		cancel: function(){
+					title: title,
+					skin: 'layui-layer-rim',
+					content: html,
+					area: [wide+'px', high+'px'],
+					cancel: function(){
 						MyTheme.Cookie.Set(name,1,day);
 					}
-			    });
-		    } 
+				});
+			}
 		}
 	},
 	'Other': {
@@ -266,9 +297,7 @@ var MyTheme = {
 				});
 				headroom.init();
 			}
-			$(".dropdown-hover").click(function(){
-				$(this).find(".dropdown-box").toggle();
-			});
+			
 		},
 		'Popup': function(id) {
 			$(id).addClass("popup-visible");
@@ -298,7 +327,7 @@ var MyTheme = {
 		        skinnum+=1;
 		        if(skinnum==lengths){skinnum=0;}
 		        var skin = $("link[name='skin']").eq(skinnum).attr("href");
-		        layer.msg("正在切换皮肤，请稍后...",{anim:5,time: 5},function(){
+		        layer.msg("正在切换皮肤，请稍后...",{anim:5,time: 2000},function(){
 		        	$("link[name='default']").attr({href:skin});
 		        });
 		        MyTheme.Cookie.Set('skinColor',skin,365);
@@ -326,7 +355,7 @@ var MyTheme = {
 			});
 		},
 		'Search': function() {		    	
-			$(".search-select li").click(function() {
+			$(".search-select p,.search-select li").click(function() {
 	    		var action =$(this).attr("data-action");
 	    		$("#search").attr("action",action);
 	    		$(".search-select .text").text($(this).html());
@@ -338,12 +367,6 @@ var MyTheme = {
                     $(".search_wd").val(wd);
                 }
 	    	});
-	    	$(".search_wd").focus(function() {
-	    		$(this).parent().parent().find(".search-dropdown-hot").show();
-	    	});
-			$(".search_wd").click(function() {
-				$(this).parent().parent().find(".search-dropdown-hot").hide();
-			});
 	    	$(".open-search").click(function(){
 				var seacrhBox=$(".search-box");
 				seacrhBox.addClass("active").siblings().hide();
@@ -362,6 +385,9 @@ var MyTheme = {
 					$(this).parent().find(".data").css("display","");
 					$(this).remove();
 				});
+			});
+			$(".dropdown-hover").click(function(){
+				$(this).find(".dropdown-box").toggle();
 			});
 		},
 		'Scrolltop': function() {
@@ -383,9 +409,11 @@ var MyTheme = {
 		  		if(display.css('display') == 'block'){
 		  			display.slideUp("slow");
 		  			$(this).html('展开  <i class="fa fa-angle-down"></i>');
+					MyTheme.Mobile.Nav.Init();
 				}else{
 					display.slideDown("slow"); 
 					$(this).html('收起   <i class="fa fa-angle-up"></i>');
+					MyTheme.Mobile.Nav.Init();
 				}
 			});
 		},
@@ -463,27 +491,156 @@ var MyTheme = {
 				if(!MyTheme.Browser.useragent.mobile){
 					PlayerSide.css({"height":LeftHeight,"overflow":"auto"});
 					PlayerSide.scrollTop(Position);
-					if($(".player-fixed").length){
-						$(window).scroll(function(){
-							if($(window).scrollTop()>window.outerHeight){
-								$(".player-fixed").addClass("fixed fadeInDown");
-								$(".player-fixed-off").show();
-								
-							}else if($(window).scrollTop()<window.outerHeight){
-								$(".player-fixed").removeClass("fixed fadeInDown");
-								$(".player-fixed-off").hide();
-							}
-						});
-					}
-					$(".player-fixed-off").click(function() {
-						$(".player-fixed").removeClass("fixed fadeInDown");
+				}
+			}		
+			if($(".player-fixed").length){
+				if(!MyTheme.Browser.useragent.mobile){
+					$(window).scroll(function(){
+						if($(window).scrollTop()>window.outerHeight){
+							$(".player-fixed").addClass("fixed fadeInDown");
+							$(".player-fixed-off").show();
+						}else if($(window).scrollTop()<window.outerHeight){
+							$(".player-fixed").removeClass("fixed fadeInDown");
+							$(".player-fixed-off").hide();
+						}
 					});
 				}
+				$(".player-fixed-off").click(function() {
+					$(".player-fixed").removeClass("fixed fadeInDown");
+				});
 			}
 		},
 		'Close': function() {
 			$(".close-btn").on("click",function(){
 				$(this).parents(".close-box").remove();
+			});
+		},
+		'Roll': function(obj,higt) {
+			setInterval(function(){ 
+				$(obj).find("ul").animate({
+					marginTop : higt,
+				},1000,function(){
+					$(this).css({marginTop : "0px"}).find("li:first").appendTo(this);
+				})
+			}, 3000);
+		},
+		'Xunlei': function() {
+			$.getScript(myui.thunderurl, function() {
+
+				$(".common_down").on("click",function(){
+					var link=$(this).parents("li").find("input[type='text']");
+					var url=link.eq(0).val();
+					var filename=$(this).parents("li").find(".text").eq(0).text();
+					thunderLink.newTask({
+						downloadDir: '下载目录',
+						tasks: [{
+							name: filename,
+							url: url,
+							size: 0
+						}]
+					});
+				});
+
+				$("input[name='checkall']").on("click",function(e){
+					var checkboxs=$(this).parent().parent().parent().parent().find("input[name^='down_url_list_']");
+					for(let i=checkboxs.length;i--;)
+						checkboxs[i].checked=this.checked;
+				});
+		
+				$(".thunder_down_all").on("click",function(){
+					checked=$(this).parents(".downlist").find("li input[type='checkbox']:checked");
+					
+					if(checked.length<1){
+							layer.msg("请选中要下载的文件");
+						}
+					else
+						{
+							var tasks=[];
+							var links=$(this).parents(".downlist").find("li .down_url");
+							var selectbox=$(this).parents(".downlist").find("li input[type='checkbox']");
+				
+							for(let i=0;i<links.length;++i){
+								if(selectbox.eq(i).is(':checked')){
+									var task={
+										url:links.eq(i).val(),
+										size:0
+									};
+									tasks.push(task);
+								}
+							}
+									
+							thunderLink.newTask({
+								downloadDir: '下载目录',
+								installFile: '',
+								taskGroupName: '下载文件',
+								tasks: tasks,
+								excludePath: ''
+						   });           	
+					}
+					
+				});
+			
+				//启动迅雷看看
+				if($(".thunderkk").length){
+					$(".thunderkk").on("click",function(){
+						var link=$(this).parents(".downlist").find("li .down_url");
+						var url=link.eq(0).val();
+						kkPlay(url,"");
+					});        
+				
+					var kkDapCtrl = null;
+					
+					function kkGetDapCtrl() {
+						if (null == kkDapCtrl) {
+							try {
+								if (window.ActiveXObject) {
+									kkDapCtrl = new ActiveXObject("DapCtrl.DapCtrl");
+								} else {
+									var browserPlugins = navigator.plugins;
+									for (var bpi = 0; bpi < browserPlugins.length; bpi++) {
+										try {
+											if (browserPlugins[bpi].name.indexOf('Thunder DapCtrl') != -1) {
+												var e = document.createElement("object");
+												e.id = "dapctrl_history";
+												e.type = "application/x-thunder-dapctrl";
+												e.width = 0;
+												e.height = 0;
+												document.body.appendChild(e);
+												break;
+											}
+										} catch(e) {}
+									}
+									kkDapCtrl = document.getElementById('dapctrl_history');
+								}
+							} catch(e) {}
+						}
+						return kkDapCtrl;
+					}
+					function kkPlay(url, moviename) {
+						var dapCtrl = kkGetDapCtrl();
+						try {
+							var ver = dapCtrl.GetThunderVer("KANKAN", "INSTALL");
+							var type = dapCtrl.Get("IXMPPACKAGETYPE");
+							if (ver && type && ver >= 672 && type >= 2401) {
+								dapCtrl.Put("SXMP4ARG", '"' + url + '" /title "' + moviename + '" /startfrom "_web_xunbo" /openfrom "_web_xunbo"');
+							} else {
+								var r = confirm("\u8bf7\u5148\u4e0b\u8f7d\u5b89\u88c5\u8fc5\u96f7\u770b\u770b\uff0c\u70b9\u786e\u5b9a\u8fdb\u5165\u8fc5\u96f7\u770b\u770b\u5b98\u7f51\u4e0b\u8f7d");
+								if (r == true) {
+									window.open('http://www.kankan.com/app/xmp.html','','');
+								}
+							}
+						} catch(e) {
+							var r = confirm("\u8bf7\u5148\u4e0b\u8f7d\u5b89\u88c5\u8fc5\u96f7\u770b\u770b\uff0c\u70b9\u786e\u5b9a\u8fdb\u5165\u8fc5\u96f7\u770b\u770b\u5b98\u7f51\u4e0b\u8f7d");
+							if (r == true) {
+								window.open('http://www.kankan.com/app/xmp.html','','');
+							}
+						}
+					}
+				}
+			});
+			$(".Codyurl").each(function(){
+				var downurl = $(this).attr("data-text");
+				MyTheme.Link.Copy.Set(this,downurl);
 			});
 		},
 		'Share': function(){
@@ -497,7 +654,7 @@ var MyTheme = {
 					},
 					share: [{
 						"bdSize": 24,
-						bdCustomStyle: myui.tpl+'statics/css/mytheme-share.css'
+						bdCustomStyle:+'statics/css/mytheme-share.css'
 					}]
 				}
 				with(document)0[(getElementsByTagName("head")[0]||body).appendChild(createElement('script')).src=''+myui.bdapi+'?cdnversion='+~(-new Date()/36e5)];
@@ -514,9 +671,9 @@ $(function(){
 	MyTheme.Images.Lazyload();
 	MyTheme.Images.Flickity.Init();	
 	MyTheme.Link.Copy.Init();
+	MyTheme.Link.Short();
 	MyTheme.Other.Bootstrap();
 	MyTheme.Other.Sort();
-	MyTheme.Other.Headroom();
 	MyTheme.Other.Search();
 	MyTheme.Other.Collapse();
 	MyTheme.Other.Slidedown();
@@ -524,5 +681,5 @@ $(function(){
 	MyTheme.Other.History.Init();
 	MyTheme.Other.Player();
 	MyTheme.Other.Close();
-	
+	MyTheme.Other.Xunlei();
 });
